@@ -11,15 +11,16 @@ def parse_train():
 
     parser = argparse.ArgumentParser(description='Train a meta-learning autoencoder.')
 
-    parser.add_argument('data', type=str, help='Dataset to load; should be numpy .npy format')
+    parser.add_argument('data', type=str, help='Dataset(s) to load; list of numpy .npy format')
     parser.add_argument('-e', '--epochs', type=int, default=500, help='Epochs to train')
     parser.add_argument('-s', '--seed', type=int, default=random.randint(0, 255), help='Random seed')
-    parser.add_argument('-d', '--device', type=str, default='cuda:0', help='Device which runs training')
+    parser.add_argument('-d', '--device', type=str, default='cpu', help='Device which runs training')
     parser.add_argument('--unsup', action='store_true', help='Train in unsupervised mode')
     parser.add_argument('--config', type=str, default='config.ini', help='Configuration file')
     parser.add_argument('--checkpoint', type=str, default=None, help='Model checkpoint to load')
 
     args = parser.parse_args()
+    args.data=args.data.split(',')
     config = configparser.ConfigParser()
     config.read(args.config)
     return args, config

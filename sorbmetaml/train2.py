@@ -14,20 +14,31 @@ np.random.seed(seed)
 
 device = torch.device(args.device)
 
-data=[]
-len_data_files=len(args.data)
-for i in range(len_data_files):
-    data[i]=np.load(args.data[i])
+
 
 bs = int(config['DATASET']['batch_size'])
 ntrain = int(config['DATASET']['n_train'])
 nval = int(config['DATASET']['n_val'])
 ntrain_task = int(config['DATASET']['ntrain_task'])
 
-data_train = MetaDataset(data[:ntrain, :, :], sample=True, task_size=int(ntrain_task*1.334))
-data_val = MetaDataset(data[ntrain:ntrain + nval, :, :], sample=True, task_size=int(ntrain_task*1.334))
-trainloader = DataLoader(data_train, batch_size=bs, num_workers=8, shuffle=True, pin_memory=True)
-validationloader = DataLoader(data_val, batch_size=len(data_val), num_workers=8, shuffle=False, pin_memory=True)
+
+data=[]
+data_train=[]
+data_val=[]
+len_data_files=len(args.data)
+print(args.data)
+for i in range(len_data_files):
+    data.append(np.load(args.data[i]))
+    data_train.append(MetaDataset(data[i][:ntrain, :, :], sample=True, task_size=int(ntrain_task*1.334)))
+    data_val.append(MetaDataset(data[i][ntrain:ntrain + nval, :, :], sample=True, task_size=int(ntrain_task*1.334)))
+
+#data = np.load(args.data)
+
+data_train_final = torch.utils.data.ConcatDataset(data_train)
+data_val_final = torch.utils.data.ConcatDataset(data_val)
+
+trainloader = DataLoader(data_train_final, batch_size=bs, num_workers=8, shuffle=True, pin_memory=True)
+validationloader = DataLoader(data_val_final, batch_size=len(data_val_final), num_workers=8, shuffle=False, pin_memory=True)
 
 nz = int(config['TRAINING']['n_latent_vec'])
 lr_init = float(config['TRAINING']['initial_lr'])
