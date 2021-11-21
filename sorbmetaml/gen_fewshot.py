@@ -3,9 +3,14 @@ import numpy as np
 
 np.random.seed(1)
 
-def get_samples(x1, x2, n, mode):
+def get_samples(x, x1, x2, n, mode):
     if mode == 'random':
         return np.random.permutation(x1.shape[0])[:n]
+    if mode == 'completely_random':
+        samples=[]
+        for i in range(x.shape[0]):
+            samples.append(np.random.permutation(x1.shape[0])[:n])
+        return samples
     indices = None
     x1max, = np.where(x1 == np.max(x1))
     x2max, = np.where(x2 == np.max(x2))
@@ -43,24 +48,33 @@ def parse():
     parser = argparse.ArgumentParser(description='Generate few-shot learning dataset')
     parser.add_argument('path', type=str, help='Path to original dataset in NPY format')
     parser.add_argument('n', type=int, default=8, help='Number of samples in each task')
-    parser.add_argument('mode', type=str, default="random", help='Sampling mode, random|edge|diagonal')
-    parser.add_argument('--test', action="store_true", default="random", help='Dry run, does not save')
+    parser.add_argument('mode', type=str, default="random", help='Sampling mode, random|edge|diagonal|completely_random')
+    parser.add_argument('--test', action="store_true", default=False, help='Dry run, does not save')
     args = parser.parse_args()
     return args
 
 if __name__ == "__main__":
     args = parse()
     data_all = np.load(args.path)
-    samples = get_samples(data_all[0, 1, :], data_all[0, 2, :], args.n, args.mode)
+    samples = get_samples(data_all, data_all[0, 1, :], data_all[0, 2, :], args.n, args.mode)
     print("Samples:")
     print(samples)
     print(list(zip(np.exp(data_all[0, 1, samples]),1000 / data_all[0, 2, samples])))
     data_few = []
-    for x in data_all:
-        data_few.append(x[:, samples])
+    if args.mode == 'completely_random':
+        j = 0
+        for x in data_all:
+            print(samples[j])
+            data_few.append(x[:, samples[j]])
+            j+=1
+    else:
+        for x in data_all:
+            data_few.append(x[:, samples])
     data_few = np.array(data_few)
     if not args.test:
         if args.mode == 'random':
+            np.save('%s_%s%d.npy' % (os.path.splitext(args.path)[0], args.mode, args.n), data_few)
+        if args.mode == 'completely_random':
             np.save('%s_%s%d.npy' % (os.path.splitext(args.path)[0], args.mode, args.n), data_few)
         else:
             np.save('%s_%s.npy' % (os.path.splitext(args.path)[0], args.mode), data_few)

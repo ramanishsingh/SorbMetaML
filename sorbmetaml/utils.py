@@ -14,7 +14,7 @@ def parse_train():
     parser.add_argument('data', type=str, help='Dataset(s) to load; list of numpy .npy format')
     parser.add_argument('-e', '--epochs', type=int, default=500, help='Epochs to train')
     parser.add_argument('-s', '--seed', type=int, default=random.randint(0, 255), help='Random seed')
-    parser.add_argument('-d', '--device', type=str, default='cpu', help='Device which runs training')
+    parser.add_argument('-d', '--device', type=str, default='cuda:0', help='Device which runs training')
     parser.add_argument('--unsup', action='store_true', help='Train in unsupervised mode')
     parser.add_argument('--config', type=str, default='config.ini', help='Configuration file')
     parser.add_argument('--checkpoint', type=str, default=None, help='Model checkpoint to load')
@@ -49,7 +49,7 @@ def parse_eval():
     return args
 
 
-def fetch_models(key, model_path, custom_data_path):
+def fetch_models(key, model_path, custom_data_path, namesfile, normsfile):
     # whether use one model or all models in a directory
     if '.pt' in model_path:
         names = [model_path.rstrip('.pt')]
@@ -59,8 +59,8 @@ def fetch_models(key, model_path, custom_data_path):
     # whether use training data or custom data
     if custom_data_path[-4:] == '.npy':
         fpath = os.getcwd()
-        zeolites = np.genfromtxt(os.path.join(fpath, 'names.csv'), dtype=str)
-        norms = np.loadtxt(os.path.join(fpath, 'norms.csv'), delimiter=',', dtype=np.float32)
+        zeolites = np.genfromtxt(namesfile, dtype=str)
+        norms = np.loadtxt(normsfile, delimiter=',', dtype=np.float32)
         data = torch.from_numpy(np.load(custom_data_path).astype(np.float32))
     else:
         zeolites = np.array([key])

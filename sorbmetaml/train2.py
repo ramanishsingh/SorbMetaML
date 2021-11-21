@@ -28,12 +28,14 @@ data_val=[]
 len_data_files=len(args.data)
 print(args.data)
 for i in range(len_data_files):
-    data.append(np.load(args.data[i]))
+    local=np.load(args.data[i])
+    local=local.astype(np.float32)
+    data.append(local)
     data_train.append(MetaDataset(data[i][:ntrain, :, :], sample=True, task_size=int(ntrain_task*1.334)))
     data_val.append(MetaDataset(data[i][ntrain:ntrain + nval, :, :], sample=True, task_size=int(ntrain_task*1.334)))
 
 #data = np.load(args.data)
-
+data_final = torch.utils.data.ConcatDataset(data)
 data_train_final = torch.utils.data.ConcatDataset(data_train)
 data_val_final = torch.utils.data.ConcatDataset(data_val)
 
@@ -113,7 +115,7 @@ train_loss, val_loss = train(epochs, displevel, checkpoint_level)
 
 torch.save(net.state_dict(), 'output/%s.pt' % runname)
 
-eval_data = get_latent_vectors(data, net)
+eval_data = get_latent_vectors(data_final, net)
 
 np.savetxt('output/%s-latents.csv' % runname, eval_data, delimiter=',')
 

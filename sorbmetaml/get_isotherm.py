@@ -13,6 +13,8 @@ def parse():
     parser.add_argument('model', type=str, default='jobs/final/output/', help='path to trained models')
     parser.add_argument('dataset', type=str, help='path to dataset NPY file')
     parser.add_argument('temperatures', type=float, nargs='+')
+    parser.add_argument('-namesfile', type=str,  help='path to names file for zeolites')
+    parser.add_argument('-normsfile', type=str,  help='path to norms file')
     parser.add_argument('-p0', type=float, default=1, help='Starting pressure in bar')
     parser.add_argument('-p1', type=float, default=403.4, help='End pressure in bar')
     parser.add_argument('-i', type=float, default=0.1, help='pressure interval')
@@ -35,7 +37,7 @@ def get_isotherms(model, keys, latents, norms, args):
 if __name__ == '__main__':
 
     args = parse()
-    names, zeolites, norms, data = fetch_models(args.zeolite, args.model, args.dataset)
+    names, zeolites, norms, data = fetch_models(args.zeolite, args.model, args.dataset, args.namesfile, args.normsfile)
     if len(np.shape(names)) == 0:
         names = np.array([names])
     if len(np.shape(norms)) == 0:
